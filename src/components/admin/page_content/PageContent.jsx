@@ -1,10 +1,11 @@
-import React from "react"
+import React from "react";
+import AdminRoutes from "../routes/AdminRoutes";
 
 function PageContent() {
 
     return (
-        <div className="container">
-            PAGE CONTENT
+        <div className="container py-5">
+            <AdminRoutes />
         </div>
     )
 }
