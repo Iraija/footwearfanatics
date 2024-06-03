@@ -25,8 +25,7 @@ function Menu() {
                 {menuState.map((menuItem, index) => (
                     <li key={index}>
                         <button
-                            disabled={menuItem.state}
-                            className={`flex items-center gap-3 ${menuItem.state ? 'border-b-2 border-primary' : 'hover:opacity-50 duration-300'}`}
+                            className="flex items-center hover:opacity-75 duration-300 gap-3"
                             onClick={() => handleButtonClick(index)}
                         >
                             {menuItem.icon} {menuItem.name}

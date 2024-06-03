@@ -1,99 +1,182 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import supabase from "../../../../../config/SupabaseClient";
+import Load2 from "../../../../loading/Load2";
+import AddCategoryModal from "./inventory_modals/AddCategoryModal";
+import ConfirmationModal from "./inventory_modals/ConfirmationModal";
 
 function CreateNewCategory() {
-    const initialDisplayCount = 10;
-    const [displayCount, setDisplayCount] = useState(initialDisplayCount);
-    const [categories, setCategories] = useState([
-        { id: 1, category: "nike" },
-        { id: 2, category: "running shoes" },
-        { id: 3, category: "adidas" },
-        { id: 4, category: "casual shoes" },
-        { id: 5, category: "sports shoes" },
-        { id: 6, category: "boots" },
-        { id: 7, category: "sandals" },
-        { id: 8, category: "heels" },
-        { id: 9, category: "slippers" },
-        { id: 10, category: "formal shoes" },
-        { id: 11, category: "sneakers" },
-        { id: 12, category: "loafers" },
-        { id: 13, category: "flip flops" },
-        { id: 14, category: "wedges" },
-        { id: 15, category: "mules" },
-        { id: 16, category: "oxfords" },
-        { id: 17, category: "clogs" },
-        { id: 18, category: "espadrilles" },
-        { id: 19, category: "platform shoes" },
-        { id: 20, category: "mary janes" },
-        { id: 21, category: "boat shoes" },
-        { id: 22, category: "derby shoes" },
-        { id: 23, category: "monk strap shoes" },
-        { id: 24, category: "chelsea boots" },
-        { id: 25, category: "slip-on shoes" },
-        { id: 26, category: "workout shoes" },
-        { id: 27, category: "hiking boots" },
-        { id: 28, category: "formal heels" },
-        { id: 29, category: "canvas shoes" },
-        { id: 30, category: "winter boots" },
-        // Add more categories as needed
-    ]);
-    const [newCategory, setNewCategory] = useState("");
+    const [categories, setCategories] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [categoryState, setCategoryState] = useState(true);
+    const [modalState, setModalState] = useState(false);
+    const [confirmationModalState, setConfirmationModalState] = useState(false);
+    const [categoryToDelete, setCategoryToDelete] = useState(null);
+    const [deleteError, setDeleteError] = useState(null);
 
-    const handleShowMore = () => {
-        setDisplayCount(categories.length);
-    };
+    const fetchData = async () => {
+        setIsLoading(true);
+        try {
+            const categoriesResponse = await supabase.from('category').select();
 
-    const handleShowLess = () => {
-        setDisplayCount(initialDisplayCount);
-    };
-
-    const handleAddCategory = () => {
-        if (newCategory.trim() !== "") {
-            setCategories([...categories, { id: Date.now(), category: newCategory }]);
-            setNewCategory("");
+            if (categoriesResponse.error) {
+                console.error(categoriesResponse.error);
+            } else {
+                setCategories(categoriesResponse.data);
+            }
+            setIsLoading(false);
+        } catch (error) {
+            console.error('Error fetching data:', error.message);
+            setIsLoading(false);
         }
     };
 
-    const handleRemoveCategory = (id) => {
-        const updatedCategories = categories.filter((cat) => cat.id !== id);
-        setCategories(updatedCategories);
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const [searchQuery, setSearchQuery] = useState(""); 
+
+    const handleRemoveCategory = async () => {
+        if (!categoryToDelete) return;
+
+        setIsLoading(true);
+        try {
+            // Check if there are any products referencing this category
+            const { data: products, error: productsError } = await supabase
+                .from('product')
+                .select()
+                .or(`product_main_category.eq.${categoryToDelete.id}`);
+
+            if (productsError) {
+                console.error("Error checking products:", productsError.message);
+                setDeleteError("Error checking products.");
+                setConfirmationModalState(false);
+            } else if (products.length > 0) {
+                // Delete the products referencing this category
+                const { error: deleteProductsError } = await supabase
+                    .from('product')
+                    .delete()
+                    .or(`product_main_category.eq.${categoryToDelete.id}`);
+
+                if (deleteProductsError) {
+                    console.error("Error deleting products:", deleteProductsError.message);
+                    setDeleteError("Error deleting products.");
+                    setConfirmationModalState(false);
+                }
+            }
+
+            // Proceed with deletion of the category
+            const { data, error } = await supabase.from("category").delete().eq("id", categoryToDelete.id);
+
+            if (error) {
+                console.error("Error deleting category:", error.message);
+                setDeleteError("Error deleting category.");
+            } else {
+                console.log("Category deleted successfully:", data);
+                // Update categories after deletion
+                setCategories(categories.filter((category) => category.id !== categoryToDelete.id));
+                setCategoryToDelete(null);
+                setConfirmationModalState(false);
+                setDeleteError(null);
+            }
+        } catch (error) {
+            console.error("Error deleting category:", error.message);
+            setDeleteError("Error deleting category.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const openConfirmationModal = (category) => {
+        setCategoryToDelete(category);
+        setConfirmationModalState(true);
+    };
+
+    const handleRefresh = async () => {
+        await fetchData();
     };
 
     return (
-        <div>
-            <p className="font-medium pb-2">Product Categories:</p>
-            <div className="flex flex-row px-2 py-4 w-full border-y-2 border-gray-300 bg-primary gap-3 flex-wrap max-h-60 overflow-y-auto">
-                {categories.slice(0, displayCount).map((category, index) => (
-                    <div
-                        className="flex justify-center gap-2 items-center bg-white shadow-sm shadow-gray-400 rounded-full px-4 py-2 cursor-pointer"
-                        key={category.id}
-                    >
-                        <p className="text-sm font-bold">{category.category}</p>
-                        <button
-                            className="hover:bg-gray-400 hover:text-white rounded-full px-2"
-                            onClick={() => handleRemoveCategory(category.id)}
-                        >
-                            <i className="fa-solid fa-xmark"></i>
-                        </button>
-                    </div>
-                ))}
-                <div className="flex justify-center gap-2 items-center bg-white shadow-sm shadow-gray-400 rounded-full px-4 py-2">
+        <div className="p-4 bg-white rounded-lg shadow-md shadow-gray-400">
+            <div className="text-sm md:text-base flex flex-col md:flex-row md:justify-between md:items-center pb-2">
+                <p className="font-medium">Product Categories:</p>
+                <div>
+                    <span className="mr-1 md:mr-2 font-medium">Search</span>
                     <input
-                        required
                         type="text"
-                        value={newCategory}
-                        onChange={(e) => setNewCategory(e.target.value)}
-                        placeholder="Add New Category"
-                        className="border-none outline-none text-sm flex-1"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Search category..."
+                        className="px-2 py-1 md:px-4 md:py-2 border-2 bg-slate-50 rounded-md outline-none text-xs md:text-sm"
                     />
-                    <button onClick={handleAddCategory} className="bg-green-500 text-sm text-white px-2 rounded-full hover:bg-green-600">
-                        Save
-                    </button>
                 </div>
             </div>
-            {displayCount !== categories.length ? (
-                <button onClick={handleShowMore} className="text-sm text-blue-500 underline mt-2">Show More</button>
-            ) : (
-                <button onClick={handleShowLess} className="text-sm text-blue-500 underline mt-2">Show Less</button>
+            <div>
+                <div className="w-full flex flex-row text-xs md:text-sm">
+                    <button 
+                        onClick={() => setCategoryState(true)}
+                        disabled={categoryState}
+                        className={`${categoryState ? 'rightside bg-[#41B06E]' : ''} rounded-t-lg relative`}
+                    >
+                        <p className={`${categoryState ? 'text-white' : 'hover:bg-[#41B06E]'} py-1 px-5 mx-1 my-1 duration-300 rounded-md hover:bg-opacity-25`}>Main</p>
+                    </button>
+                    <button 
+                        onClick={() => setCategoryState(false)}
+                        disabled={!categoryState}
+                        className={`${categoryState ? '' : 'rightside leftside bg-[#41B06E]'} rounded-t-lg relative`}
+                    >
+                        <p className={`${categoryState ? 'hover:bg-[#41B06E]' : 'text-white'} py-1 px-5 mx-1 my-1 duration-300 rounded-md hover:bg-opacity-25`}>Sub</p>
+                    </button>
+                    <div className="flex justify-end gap-2 w-full">
+                        <button onClick={() => setModalState((prevState) => !prevState)} className="py-1 px-3 my-1 duration-300 rounded-full text-white bg-green-500">
+                            <span>Add Category </span><i className="fa-solid fa-plus"></i>
+                        </button>
+                        <button onClick={handleRefresh} className="text-gray-400 hover:text-blue-500 text-xs md:text-sm py-1 px-1">
+                            <i className="fa-solid fa-rotate-right"></i>
+                        </button>
+                    </div>
+                </div>
+                <div className={`${categoryState ? '' : 'rounded-tl-lg'} flex flex-row px-2 py-4 w-full rounded-b-lg rounded-tr-lg bg-[#41B06E] gap-3 flex-wrap overflow-x-auto text-xs relative`}>
+                    {isLoading && <Load2 />}
+                    {categories && (
+                        <div>
+                            {categoryState ? (
+                                <div className="flex gap-2">
+                                    {categories.filter(category => category.category_type === 'main').map((category) => (
+                                        <div key={category.id} className="py-2 px-4 rounded-full bg-white flex">
+                                            <span>{category.product_category} </span>
+                                            <button onClick={() => openConfirmationModal(category)} className="text-gray-400 hover:text-gray-700 duration-300">
+                                                <i className="fa-solid fa-xmark"></i>
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="flex gap-2">
+                                    {categories.filter(category => category.category_type === 'sub').map((category) => (
+                                        <div key={category.id} className="py-2 px-4 rounded-full bg-white flex">
+                                            <span>{category.product_category} </span>
+                                            <button onClick={() => openConfirmationModal(category)} className="text-gray-400 hover:text-gray-700 duration-300">
+                                                <i className="fa-solid fa-xmark"></i>
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+            </div>
+            {modalState && <AddCategoryModal setModalState={setModalState} fetchData={fetchData} />}
+            {confirmationModalState && (
+                <ConfirmationModal
+                    onConfirm={handleRemoveCategory}
+                    onCancel={() => setConfirmationModalState(false)}
+                    name={categoryToDelete?.product_category}
+                />
+            )}
+            {deleteError && (
+                <div className="text-red-500 text-center mt-2">{deleteError}</div>
             )}
         </div>
     );

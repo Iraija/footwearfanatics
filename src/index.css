@@ -1,3 +1,27 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.leftside::before{
+    content: '';
+    position: absolute;
+    width: 15px;
+    height: 15px;
+    background-color: transparent;
+    border-bottom-right-radius: 50%;
+    box-shadow: 5px 5px 0 #41B06E;
+    left: -15px;
+    bottom: 0;
+}
+
+.rightside::after{
+    content: '';
+    position: absolute;
+    width: 15px;
+    height: 15px;
+    background-color: transparent;
+    border-bottom-left-radius: 50%;
+    box-shadow: -5px 5px 0 #41B06E;
+    right: -15px;
+    bottom: 0;
+}
