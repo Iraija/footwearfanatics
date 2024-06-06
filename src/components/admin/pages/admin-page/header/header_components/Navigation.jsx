@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-function Menu() {
+function Navigation() {
     const navigate = useNavigate();
 
     const [menuState, setMenuState] = useState([
@@ -37,4 +37,4 @@ function Menu() {
     );
 }
 
-export default Menu;
+export default Navigation;

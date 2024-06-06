@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import Modal from "../../../../../modal/Modal";
-import supabase from "../../../../../../config/SupabaseClient";
+import { toast } from "react-toastify";
+import Modal from "../../../../../../../modal/Modal";
+import supabase from "../../../../../../../../config/SupabaseClient";
 
 function AddBrandModal({ setModalState, fetchData }) {
     const [newBrand, setNewBrand] = useState({ name: "", description: "" });
@@ -29,9 +30,10 @@ function AddBrandModal({ setModalState, fetchData }) {
             setNewBrand({ name: "", description: "" }); // Clear inputs after adding
             setModalState(false); // Close modal after adding
             await fetchData(); // Refresh brand list
+            toast.success("Brand successfully added"); // Show success toast
         } catch (error) {
             console.error("Error adding brand:", error.message);
-        } finally {
+            toast.error("Error adding brand"); // Show error toast if needed
         }
     };
 
@@ -48,7 +50,7 @@ function AddBrandModal({ setModalState, fetchData }) {
             <div>
                 <p className="font-bold mb-5">Add New Brand:</p>
                 {error && <p className="text-red-500 text-xs mb-2">{error}</p>}
-                <div className="text-xs md:text-sm flex gap-5">
+                <div className="text-xs md:text-sm flex flex-col gap-5">
                     <div className="flex flex-col">
                         <label htmlFor="">Brand Name:</label>
                         <input
@@ -75,7 +77,7 @@ function AddBrandModal({ setModalState, fetchData }) {
                         Save
                     </button>
                     <button
-                        className="py-1 px-3 bg-gray-300 text-black text-xs md:text-sm rounded-full"
+                        className="py-1 px-3 bg-red-500 text-white text-xs md:text-sm rounded-full"
                         onClick={() => setModalState(false)}
                     >
                         Cancel

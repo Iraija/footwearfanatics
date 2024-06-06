@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
-import supabase from "../../../../../config/SupabaseClient";
+import supabase from "../../../../../../../config/SupabaseClient";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import AddBrandModal from "./inventory_modals/AddBrandModal";
 import ConfirmationModal from "./inventory_modals/ConfirmationModal";
-import Load2 from "../../../../loading/Load2";
+import Load2 from "../../../../../../loading/Load2";
 
 function Brands() {
     const [brands, setBrands] = useState([]);
+    const [products, setProducts] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [modalState, setModalState] = useState(false);
@@ -22,11 +23,18 @@ function Brands() {
         setIsLoading(true);
         try {
             const brandResponse = await supabase.from('brand').select();
+            const productResponse = await supabase.from('product').select();
 
-            if (brandResponse.error) {
-                console.error(brandResponse.error);
+            if (brandResponse.error || productResponse.error) {
+                console.error(brandResponse.error || productResponse.error);
             } else {
-                setBrands(brandResponse.data || []);
+                const brandsWithCount = brandResponse.data.map((brand) => {
+                    const productCount = productResponse.data.filter(product => product.product_brand === brand.brand_name).length;
+                    return { ...brand, productCount };
+                });
+
+                setBrands(brandsWithCount);
+                setProducts(productResponse.data || []);
             }
             setIsLoading(false);
         } catch (error) {
@@ -47,10 +55,10 @@ function Brands() {
             setBrands(brands.filter((brand) => brand.id !== brandToDelete.id));
             setBrandToDelete(null);
             setConfirmationModalState(false);
-            toast.success("Brand deleted successfully");
+            toast.success("Brand deleted successfully!");
         } catch (error) {
             console.error('Error deleting brand:', error.message);
-            toast.error("Error deleting brand");
+            toast.error("Error deleting brand!");
         } finally {
             setIsLoading(false);
         }
@@ -60,7 +68,6 @@ function Brands() {
         fetchData();
     };
     
-
     const filteredBrands = brands.filter((brand) =>
         brand && brand.brand_name && brand.brand_name.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -85,18 +92,18 @@ function Brands() {
                     />
                 </div>
             </div>
-            <div className="flex justify-between">
+            <div className="flex justify-between mb-2">
                 <button
                     onClick={() => setModalState(true)}
-                    className="py-1 px-3 bg-green-500 text-white text-xs md:text-sm rounded-full mt-3"
+                    className="py-1 px-3 text-white text-xs md:text-sm bg-green-500 rounded-full"
                 >
-                    Add Brand
+                    Add Brand <i className="fa-solid fa-plus"></i>
                 </button>
                 <button onClick={handleRefresh} className="text-gray-400 hover:text-blue-500 text-xs md:text-sm py-1 px-1">
                     <i className="fa-solid fa-rotate-right"></i>
                 </button>
             </div>
-            <div className=" overflow-auto h-40 relative">
+            <div className="overflow-auto h-40 relative">
                 {isLoading && <Load2 />}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pb-2">
                     {filteredBrands.map((brand) => (
@@ -107,6 +114,7 @@ function Brands() {
                                     <i className="fa-solid fa-xmark"></i>
                                 </button>
                             </div>
+                            <p className="text-gray-500 text-xs mt-1">Total Products: {brand.productCount}</p>
                         </div>
                     ))}
                     {!isLoading && 

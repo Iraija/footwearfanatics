@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-import Modal from "../../../../../modal/Modal";
-import supabase from "../../../../../../config/SupabaseClient";
-import CouldNotFetch from "../../../../../modal/modal_contents/CouldNotFetch";
-import Load from "../../../../../loading/Load";
-import Load2 from "../../../../../loading/Load2";
+import Modal from "../../../../../../../modal/Modal";
+import supabase from "../../../../../../../../config/SupabaseClient";
+import CouldNotFetch from "../../../../../../../modal/modal_contents/CouldNotFetch";
+import Load from "../../../../../../../loading/Load";
+import Load2 from "../../../../../../../loading/Load2";
 
 function ProductSizeModal({ product, setModalState }) {
     const [fetchError, setFetchError] = useState(null);

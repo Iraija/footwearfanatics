@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
-import supabase from "../../../../../config/SupabaseClient";
-import Load2 from "../../../../loading/Load2";
+import supabase from "./../../../../../../../config/SupabaseClient";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import Load2 from "./../../../../../../loading/Load2";
 import AddCategoryModal from "./inventory_modals/AddCategoryModal";
 import ConfirmationModal from "./inventory_modals/ConfirmationModal";
 
@@ -12,6 +14,7 @@ function CreateNewCategory() {
     const [confirmationModalState, setConfirmationModalState] = useState(false);
     const [categoryToDelete, setCategoryToDelete] = useState(null);
     const [deleteError, setDeleteError] = useState(null);
+    const [searchQuery, setSearchQuery] = useState("");
 
     const fetchData = async () => {
         setIsLoading(true);
@@ -33,8 +36,6 @@ function CreateNewCategory() {
     useEffect(() => {
         fetchData();
     }, []);
-
-    const [searchQuery, setSearchQuery] = useState(""); 
 
     const handleRemoveCategory = async () => {
         if (!categoryToDelete) return;
@@ -74,12 +75,14 @@ function CreateNewCategory() {
             } else {
                 console.log("Category deleted successfully:", data);
                 // Update categories after deletion
+                toast.success("Category deleted successfully!");
                 setCategories(categories.filter((category) => category.id !== categoryToDelete.id));
                 setCategoryToDelete(null);
                 setConfirmationModalState(false);
                 setDeleteError(null);
             }
         } catch (error) {
+            toast.error("Error deleting category!");
             console.error("Error deleting category:", error.message);
             setDeleteError("Error deleting category.");
         } finally {
@@ -95,6 +98,10 @@ function CreateNewCategory() {
     const handleRefresh = async () => {
         await fetchData();
     };
+
+    const filteredCategories = categories?.filter(category => 
+        category.product_category.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     return (
         <div className="p-4 bg-white rounded-lg shadow-md shadow-gray-400">
@@ -118,17 +125,17 @@ function CreateNewCategory() {
                         disabled={categoryState}
                         className={`${categoryState ? 'rightside bg-[#41B06E]' : ''} rounded-t-lg relative`}
                     >
-                        <p className={`${categoryState ? 'text-white' : 'hover:bg-[#41B06E]'} py-1 px-5 mx-1 my-1 duration-300 rounded-md hover:bg-opacity-25`}>Main</p>
+                        <p className={`${categoryState ? 'text-white' : 'hover:bg-[#41B06E]'} py-1 px-3 md:px-5 mx-[2px] md:mx-1 my-[2px] md:my-1 duration-300 rounded-md hover:bg-opacity-25`}>Main</p>
                     </button>
                     <button 
                         onClick={() => setCategoryState(false)}
                         disabled={!categoryState}
                         className={`${categoryState ? '' : 'rightside leftside bg-[#41B06E]'} rounded-t-lg relative`}
                     >
-                        <p className={`${categoryState ? 'hover:bg-[#41B06E]' : 'text-white'} py-1 px-5 mx-1 my-1 duration-300 rounded-md hover:bg-opacity-25`}>Sub</p>
+                        <p className={`${categoryState ? 'hover:bg-[#41B06E]' : 'text-white'} py-1 px-3 md:px-5 mx-[2px] md:mx-1 my-[2px] md:my-1 duration-300 rounded-md hover:bg-opacity-25`}>Sub</p>
                     </button>
                     <div className="flex justify-end gap-2 w-full">
-                        <button onClick={() => setModalState((prevState) => !prevState)} className="py-1 px-3 my-1 duration-300 rounded-full text-white bg-green-500">
+                        <button onClick={() => setModalState((prevState) => !prevState)} className="py-[2px] md:py-1 px-2 md:px-5 mx-[2px] md:mx-1 my-[2px] md:my-1 duration-300 rounded-full text-white bg-green-500">
                             <span>Add Category </span><i className="fa-solid fa-plus"></i>
                         </button>
                         <button onClick={handleRefresh} className="text-gray-400 hover:text-blue-500 text-xs md:text-sm py-1 px-1">
@@ -138,13 +145,13 @@ function CreateNewCategory() {
                 </div>
                 <div className={`${categoryState ? '' : 'rounded-tl-lg'} flex flex-row px-2 py-4 w-full rounded-b-lg rounded-tr-lg bg-[#41B06E] gap-3 flex-wrap overflow-x-auto text-xs relative`}>
                     {isLoading && <Load2 />}
-                    {categories && (
+                    {filteredCategories && (
                         <div>
                             {categoryState ? (
                                 <div className="flex gap-2">
-                                    {categories.filter(category => category.category_type === 'main').map((category) => (
-                                        <div key={category.id} className="py-2 px-4 rounded-full bg-white flex">
-                                            <span>{category.product_category} </span>
+                                    {filteredCategories.filter(category => category.category_type === 'main').map((category) => (
+                                        <div key={category.id} className="py-2 px-4 rounded-full bg-white">
+                                            <span className="text-nowrap">{category.product_category} </span>
                                             <button onClick={() => openConfirmationModal(category)} className="text-gray-400 hover:text-gray-700 duration-300">
                                                 <i className="fa-solid fa-xmark"></i>
                                             </button>
@@ -153,9 +160,9 @@ function CreateNewCategory() {
                                 </div>
                             ) : (
                                 <div className="flex gap-2">
-                                    {categories.filter(category => category.category_type === 'sub').map((category) => (
-                                        <div key={category.id} className="py-2 px-4 rounded-full bg-white flex">
-                                            <span>{category.product_category} </span>
+                                    {filteredCategories.filter(category => category.category_type === 'sub').map((category) => (
+                                        <div key={category.id} className="py-2 px-4 rounded-full bg-white">
+                                            <span className="text-nowrap">{category.product_category} </span>
                                             <button onClick={() => openConfirmationModal(category)} className="text-gray-400 hover:text-gray-700 duration-300">
                                                 <i className="fa-solid fa-xmark"></i>
                                             </button>
@@ -178,6 +185,7 @@ function CreateNewCategory() {
             {deleteError && (
                 <div className="text-red-500 text-center mt-2">{deleteError}</div>
             )}
+            <ToastContainer />
         </div>
     );
 }

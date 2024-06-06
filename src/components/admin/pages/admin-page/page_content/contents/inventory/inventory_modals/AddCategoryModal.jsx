@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import Modal from "../../../../../modal/Modal";
-import supabase from "../../../../../../config/SupabaseClient";
+import { toast } from "react-toastify";
+import Modal from "./../../../../../../../modal/Modal";
+import supabase from "./../../../../../../../../config/SupabaseClient";
 
 function AddCategoryModal({ setModalState, fetchData }) {
     const [categoryName, setCategoryName] = useState("");
@@ -20,12 +21,14 @@ function AddCategoryModal({ setModalState, fetchData }) {
             if (error) {
                 throw error;
             }
+            toast.success("Category added successfully!");
             console.log("Category added successfully:", data);
             // Optionally, you can close the modal after saving
             setModalState(false);
             // Refresh categories
             await fetchData();
         } catch (error) {
+            toast.error("Error adding category!")
             console.error("Error adding category:", error.message);
         }
     };

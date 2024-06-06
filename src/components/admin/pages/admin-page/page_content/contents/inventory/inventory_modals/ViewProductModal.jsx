@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
-import Modal from "../../../../../modal/Modal";
-import supabase from "../../../../../../config/SupabaseClient";
-import Load from "../../../../../loading/Load";
+import Modal from "./../../../../../../../modal/Modal";
+import supabase from "./../../../../../../../../config/SupabaseClient";
+import Load from "./../../../../../../../loading/Load";
 
 function ViewProductModal({ product, setModalState }) {
     const { product_name, product_description, product_brand, product_price, product_main_category, product_sub_category_1, product_sub_category_2, product_sub_category_3, product_image_url } = product;
@@ -90,7 +90,7 @@ function ViewProductModal({ product, setModalState }) {
                         className="text-xs md:text-sm"
                     >
                         {!isEdit ?
-                            <div className="max-h-96 overflow-y-auto flex flex-col gap-5">
+                            <div className="overflow-y-auto flex flex-col gap-5">
                                 <div className="flex flex-col md:grid md:grid-cols-4 gap-4">
                                     <div className="grid col-span-1 row-span-3">
                                         <label className="font-semibold">Product Image:</label>
@@ -114,7 +114,6 @@ function ViewProductModal({ product, setModalState }) {
                                     <div className="grid col-span-3">
                                         <label className="font-semibold">Price:</label>
                                         <div>
-                                            <span className="text-gray-400">Php </span>
                                             <span>{product_price ? `Php ${product_price.toFixed(2)}` : 'No price inputted'}</span>
                                         </div>
                                     </div>
@@ -125,13 +124,13 @@ function ViewProductModal({ product, setModalState }) {
                                     <div className="grid col-span-4">
                                         <label className="font-semibold">Product Description:</label>
                                         <textarea
-                                            className="px-3 py-1 rounded-md outline-none resize-none"
+                                            className="px-3 py-1 rounded-md outline-none resize-none h-20"
                                             name="product_description"
                                             readOnly
                                             value={product_description}
                                         />
                                     </div>
-                                    <label className="grid col-span-4">Product Categories:</label>
+                                    <label className="grid col-span-4 font-semibold">Product Categories:</label>
                                     <div className="grid">
                                         <label className="font-semibold">Main Category:</label>
                                         <span>{product_main_category}</span>
@@ -244,7 +243,7 @@ function ViewProductModal({ product, setModalState }) {
                                             onChange={handleChange}
                                         />
                                     </div>
-                                    <label className="grid col-span-4">Product Categories:</label>
+                                    <label className="grid col-span-4 font-semibold">Product Categories:</label>
                                     <div className="grid">
                                         <label className="font-semibold">Main Category:</label>
                                         <select

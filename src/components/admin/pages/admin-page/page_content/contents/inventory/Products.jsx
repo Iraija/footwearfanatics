@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
-import supabase from "../../../../../config/SupabaseClient";
+import supabase from "./../../../../../../../config/SupabaseClient";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import ProductSizeModal from "./inventory_modals/ProductSizeModal";
-import Load2 from "../../../../loading/Load2";
+import Load2 from "./../../../../../../loading/Load2";
 import AddProductModal from "./inventory_modals/AddProductModal";
 import ViewProductModal from "./inventory_modals/ViewProductModal";
 import ConfirmationModal from "./inventory_modals/ConfirmationModal";
@@ -104,10 +106,11 @@ function Products() {
             if (productError) {
                 throw new Error('Error deleting product');
             }
-
+            toast.success("Product deleted successfully!");
             // Refresh data after deletion
             fetchData();
         } catch (error) {
+            toast.error("Error deleting product!");
             console.error('Error deleting product:', error.message);
         } finally {
             setIsLoading(false);
@@ -180,8 +183,8 @@ function Products() {
                 {filteredProducts.length > 0 &&
                     <div className={`${isLoading ? 'overflow-hidden' : 'overflow-auto'} h-full`}>
                         <table className="min-w-full divide-y divide-gray-200 text-xs">
-                            <thead className="bg-gray-50">
-                                <tr className="sticky top-0">
+                            <thead className="bg-gray-50 sticky top-0">
+                                <tr className="">
                                     {tableHeader.map((th, index) => (
                                         <th key={index} scope="col" className="px-4 py-1 md:px-6 md:py-3 font-medium text-gray-500 uppercase tracking-wider text-center">{th.name}</th>
                                     ))}
@@ -223,6 +226,7 @@ function Products() {
                     setModalState={setConfirmModal}
                 />
             )}
+            <ToastContainer />
         </div>
     );
 }

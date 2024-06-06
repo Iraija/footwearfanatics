@@ -1,9 +1,9 @@
 import React from "react"
 import {  Route, Routes } from "react-router-dom";
-import Dashboard from "../page_content/contents/Dashboard";
-import Inventory from "../page_content/contents/Inventory";
-import Orders from "../page_content/contents/Orders";
-import Customers from "../page_content/contents/Customers";
+import Dashboard from "../pages/admin-page/page_content/contents/Dashboard";
+import Inventory from "../pages/admin-page/page_content/contents/Inventory";
+import Orders from "../pages/admin-page/page_content/contents/Orders";
+import Customers from "../pages/admin-page/page_content/contents/Customers";
 
 function AdminRoutes() {
 

@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import SideBar from "../../../modal/SideBar";
+import SideBar from "../../../../../modal/SideBar";
 
-function SideBarMenu({ setSidebarState }) {
+function SideBarMenu({ setSidebarState, signOut, adminDetails }) {
     const navigate = useNavigate();
 
     const menu = [
@@ -12,13 +12,9 @@ function SideBarMenu({ setSidebarState }) {
         { name: "Orders", icon: <i className="fa-solid fa-cart-shopping"></i>, navigate: "/orders" }
     ];
 
-    const buttons = [
-        { name: "Settings", icon: <i className="fa-solid fa-gear"></i> },
-        { name: "Log out", icon: <i className="fa-solid fa-right-from-bracket"></i> },
-    ];
-
     const handleButtonClick = (index) => {
         navigate(menu[index].navigate);
+        setSidebarState(false);
     };
 
     return (
@@ -29,7 +25,28 @@ function SideBarMenu({ setSidebarState }) {
                 >
                     <i className="fa-solid fa-xmark"></i>
                 </button>
-                <div className="h-full flex flex-col justify-between">
+                <div className="flex flex-col items-center py-5">
+                    <div className="rounded-full w-20 h-20 bg-gray-400 overflow-hidden border-[1.5px]">
+                        {adminDetails &&
+                            <img src={adminDetails.admin_profile_pic} alt="profile" className="h-full w-full object-cover" />
+                        }
+                    </div>
+                    { adminDetails && 
+                        <span className="font-bold text-md">
+                            {adminDetails.admin_first_name} {adminDetails.admin_last_name}
+                        </span>
+                    }
+                    <p className="px-4 text-[.50rem] font-medium">{adminDetails.admin_email_account}</p>
+                </div>
+                <div className="border-y-[1px] mb-5 text-sm">
+                    <button
+                        onClick={() => signOut()}
+                        className="flex items-center hover:opacity-75 duration-300 gap-3 py-3"
+                    >
+                        <span className="w-5"><i className="fa-solid fa-right-from-bracket"></i></span><span>Sign out</span>
+                    </button>
+                </div>
+                <div className="h-full flex flex-col text-sm">
                     <ul className="flex flex-col">
                         {menu.map((menuItem, index) => (
                             <li key={index}>
@@ -42,15 +59,6 @@ function SideBarMenu({ setSidebarState }) {
                             </li>
                         ))}
                     </ul>
-                    <div>
-                        {buttons.map((button, index) =>(
-                            <button key={index} 
-                                className="flex items-center hover:opacity-75 duration-300 gap-3 py-3"
-                            >
-                                <span className="w-5">{button.icon}</span><span>{button.name}</span>
-                            </button>
-                        ))}
-                    </div>
                 </div>
             </SideBar>
         </>

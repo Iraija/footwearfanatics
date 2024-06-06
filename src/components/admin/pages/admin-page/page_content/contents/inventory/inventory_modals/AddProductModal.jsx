@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
-import Modal from "../../../../../modal/Modal";
-import supabase from "../../../../../../config/SupabaseClient";
-import Load from "../../../../../loading/Load";
+import { toast } from "react-toastify";
+import Modal from "./../../../../../../../modal/Modal";
+import supabase from "./../../../../../../../../config/SupabaseClient";
+import Load from "./../../../../../../../loading/Load";
 
 function AddProductModal({ setModalState }) {
     const [fetchError, setFetchError] = useState(null);
@@ -111,11 +112,12 @@ function AddProductModal({ setModalState }) {
             if (productError) {
                 throw new Error('Error creating product: ' + productError.message);
             }
-    
+            toast.success("Product added successfully!");
             setLoad(false);
-            console.log('Product created successfully');
+            console.log('Product added successfully');
             setModalState(false);
         } catch (error) {
+            toast.error("Error adding product!");
             setLoad(false);
             console.error(error.message);
             alert('Error: ' + error.message);
@@ -137,7 +139,7 @@ function AddProductModal({ setModalState }) {
                         onSubmit={handleSubmit}
                         className="text-xs md:text-sm"
                     >
-                        <div className="max-h-96 overflow-y-auto flex flex-col gap-5">
+                        <div className="overflow-y-auto flex flex-col gap-5">
                             <div className="flex flex-col md:grid md:grid-cols-4 gap-4">
                                 <div className="grid col-span-1 row-span-3">
                                     <label className="font-semibold">Product Image:</label>
@@ -240,7 +242,7 @@ function AddProductModal({ setModalState }) {
                                         onChange={handleChange}
                                     />
                                 </div>
-                                <label className="grid col-span-4">Product Categories:</label>
+                                <label className="grid col-span-4 font-semibold">Product Categories:</label>
                                 <div className="grid">
                                     <label className="font-semibold">Main Category:</label>
                                     <select
